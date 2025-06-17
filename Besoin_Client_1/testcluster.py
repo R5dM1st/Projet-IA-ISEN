@@ -1,54 +1,60 @@
+import numpy as np
 import pandas as pd
-from sklearn.cluster import KMeans
-
-import plotly.express as px
 import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import calinski_harabasz_score, davies_bouldin_score
 
 # Chargement des données
 df = pd.read_csv("export_IA_client1.csv")
 
-# Création d'un cluster fixe "Stationnaire"
-df["KMeans_Cluster"] = -1  # Valeur temporaire
-df.loc[(df["SOG"] == 0) & (df["COG"] == 0), "KMeans_Cluster"] = 99  # Assignation du cluster 99 pour les navires immobiles
-
-# Filtrage des navires non stationnaires
-df_kmeans = df[df["KMeans_Cluster"] != 99].copy()
-
 # Sélection des caractéristiques
-features = ["SOG", "COG", "Heading"]
-X = df_kmeans[features].values
+features = ["LAT", "LON", "SOG", "COG"]
+X = df[features].values
 
+# Normalisation des données
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
 
+# 🎯 Méthode du coude et calcul des scores
+inertia = []
+calinski_scores = []
+davies_scores = []
+range_clusters = range(2, 11)  # Tester entre 2 et 10 clusters
 
-# 🎯 Application de K-Means (4 clusters)
-kmeans = KMeans(n_clusters=4, random_state=42)
-df_kmeans["KMeans_Cluster"] = kmeans.fit_predict(X_scaled)
+for k in range_clusters:
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(X_scaled)
+    inertia.append(kmeans.inertia_)
+    calinski_scores.append(calinski_harabasz_score(X_scaled, kmeans.labels_))
+    davies_scores.append(davies_bouldin_score(X_scaled, kmeans.labels_))
 
-# Réintégration des résultats
-df.update(df_kmeans)
+# 🏆 Affichage des scores
+print(f"Calinski-Harabasz Index : {calinski_scores}")
+print(f"Davies-Bouldin Index : {davies_scores}")
 
-# Sauvegarde des clusters
-df.to_csv("clustering_results_with_stationnaire.csv", index=False)
-
-
-
-# Chargement des données avec clustering
-df = pd.read_csv("clustering_results_with_stationnaire.csv")
-
-# Création du graphique
-plt.figure(figsize=(10, 6))
-scatter = plt.scatter(df["SOG"], df["COG"], c=df["KMeans_Cluster"], cmap="tab10", alpha=0.7)
-
-# Ajout de la légende et titres
-plt.colorbar(scatter, label="Cluster")
-plt.xlabel("SOG")
-plt.ylabel("COG")
-plt.title("Clustering des navires en fonction du cap et de la vitesse")
-plt.grid(True)
+# 🔍 Graphique de la méthode du coude
+plt.figure(figsize=(8, 5))
+plt.plot(range_clusters, inertia, marker="o", linestyle="-")
+plt.xlabel("Nombre de clusters")
+plt.ylabel("Inertia")
+plt.title("Méthode du coude pour déterminer le nombre optimal de clusters")
 plt.show()
 
-fig = px.scatter_map(df, lat="LAT", lon="LON", color="KMeans_Cluster",
-                     color_discrete_map={99: "red"},  # Navires stationnaires en rouge
-                     map_style="open-street-map", zoom=5)
+# 🔍 Graphique des scores Davies-Bouldin
+plt.figure(figsize=(8, 5))
+plt.plot(range_clusters, davies_scores, marker="o", linestyle="-", label="Davies-Bouldin")
+plt.xlabel("Nombre de clusters")
+plt.ylabel("Score")
+plt.title("Comparaison des scores Davies-Bouldin")
+plt.legend()
+plt.show()
 
-fig.show()
+# 🔍 Graphique des scores Calinski-Harabasz
+plt.figure(figsize=(8, 5))
+plt.plot(range_clusters, calinski_scores, marker="o", linestyle="-", label="Calinski-Harabasz")
+plt.xlabel("Nombre de clusters")
+plt.ylabel("Score")
+plt.title("Comparaison des scores Calinski-Harabasz")
+plt.legend()
+plt.show()
