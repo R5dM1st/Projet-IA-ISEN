@@ -6,5 +6,8 @@ import pandas as pd
 df = pd.read_csv("vessel-clean-final.csv")
 columns_to_keep = ["BaseDateTime", "LAT", "LON", "SOG", "COG", "Heading"]
 df_selected = df[columns_to_keep]
+# Suppression des valeurs manquantes
+df.dropna(inplace=True)
 #pas besoin d'encoder de valeurs ici donc on exporte
 df_selected.to_csv("export_IA_client1.csv", index=False)
+
