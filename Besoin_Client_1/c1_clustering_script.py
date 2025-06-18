@@ -75,9 +75,6 @@ plt.title("Comparaison des scores Calinski-Harabasz")
 plt.legend()
 plt.show()
 
-# Sauvegarde des résultats
-df.to_csv("clustering_results.csv", index=False)
-
 # 🔍 Visualisation des clusters K-Means
 plt.scatter(df["LON"], df["LAT"], c=df["KMeans_Cluster"], cmap="viridis")
 plt.xlabel("LON")
@@ -88,3 +85,6 @@ plt.show()
 fig = px.scatter_map(df, lat="LAT", lon="LON", color="KMeans_Cluster",
                      map_style="open-street-map", zoom=5)
 fig.show()
+
+# Sauvegarde des résultats
+df.to_csv("clustering_client1_results.csv", index=False)

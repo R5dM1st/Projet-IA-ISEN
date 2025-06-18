@@ -1,5 +1,3 @@
-#partie client 1
-
 import pandas as pd
 
 # Chargement des données brutes
