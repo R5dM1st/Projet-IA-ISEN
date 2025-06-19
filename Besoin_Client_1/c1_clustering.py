@@ -5,7 +5,6 @@ import plotly.express as px
 from sklearn.metrics import silhouette_score
 from sklearn.metrics import calinski_harabasz_score, davies_bouldin_score
 from sklearn.preprocessing import StandardScaler
-import joblib
 
 # Chargement des données pré-traitées
 df = pd.read_csv("export_IA_client1.csv")
@@ -49,6 +48,7 @@ MBKM_calinski_scores = []
 MBKM_davies_scores = []
 range_clusters = range(2, 11)  # Tester entre 2 et 10 clusters
 
+# Préparation des méthodes de clustering pour k clusters
 for k in range_clusters:
     kmeans = KMeans(n_clusters=k, random_state=42)
     mbkmeans = MiniBatchKMeans(n_clusters=k, batch_size=1000, random_state=42)
@@ -60,7 +60,7 @@ for k in range_clusters:
     MBKM_calinski_scores.append(calinski_harabasz_score(X_scaled, mbkmeans.labels_))
     MBKM_davies_scores.append(davies_bouldin_score(X_scaled, mbkmeans.labels_))
 
-# Affichage des scores
+# Affichage des scores en listes
 print(f"KM Calinski-Harabasz Index : {KM_calinski_scores}")
 print(f"KM Davies-Bouldin Index : {KM_davies_scores}")
 print(f"MBKM Calinski-Harabasz Index : {MBKM_calinski_scores}")
